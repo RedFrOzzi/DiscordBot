@@ -15,8 +15,7 @@ namespace DiscordBot.CommandModules
             [SlashCommandParameter(Name = "ресурс", Description = "название ресурса")] ResourcesEnum resources,
             [SlashCommandParameter(Name = "количество", Description = "количество ресурсов")] long amount)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
             await UpdateResource(this, resources, amount);
         }
 
@@ -29,7 +28,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Файл рейда не создан, сперва используй /создать"
+                    Content = "Файл рейда не создан, сперва используй /создать",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -65,7 +65,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Ресурс не обновлен, файл не записан"
+                    Content = "Ресурс не обновлен, файл не записан",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -75,7 +76,8 @@ namespace DiscordBot.CommandModules
 
             InteractionMessageProperties successProps = new()
             {
-                Content = $"Ресурс <{GetResourceName(resourceType)}> обновлен, новое значение: {GetResourceAmount(data!, resourceType)}"
+                Content = $"Ресурс <{GetResourceName(resourceType)}> обновлен, новое значение: {GetResourceAmount(data!, resourceType)}",
+                Flags = MessageFlags.Ephemeral
             };
             var successMsg = InteractionCallback.Message(successProps);
 
@@ -109,48 +111,6 @@ namespace DiscordBot.CommandModules
                 ResourcesEnum.StravidiumOre => data.StravidiumOre.Amount,
                 _ => 0
             };
-        }
-
-        private async Task<bool> IsAuthorized()
-        {
-            var guildUser = Context.User as GuildUser;
-
-            if (guildUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            var roles = guildUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var role in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(role))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            return true;
         }
     }
 }

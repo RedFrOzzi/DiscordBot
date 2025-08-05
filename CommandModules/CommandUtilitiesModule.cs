@@ -1,4 +1,5 @@
-﻿using NetCord;
+﻿using DiscordBot.Utilities;
+using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
@@ -17,50 +18,56 @@ namespace DiscordBot.CommandModules
         [SubSlashCommand("удалить_текст", "Удаляет все текстовые сообщения бота, кроме тех, что содержат контент.")]
         public async Task DeleteAllBotsMessagesExcludingContent()
         {
+            if (!await this.IsAuthorized()) { return; }
+
             try
             {
                 await _client.DeleteMessagesAsync(Context.Channel.Id, GetBotsTextMessages(_client, Context));
             }
             catch
             {
-                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично" }));
+                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично", Flags = MessageFlags.Ephemeral }));
                 return;
             }
 
-            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены" }));
+            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены", Flags = MessageFlags.Ephemeral }));
         }
 
         [SubSlashCommand("удалить_все", "Удаляет все сообщения бота")]
         public async Task DeleteAllBotsMessages()
         {
+            if (!await this.IsAuthorized()) { return; }
+
             try
             {
                 await _client.DeleteMessagesAsync(Context.Channel.Id, GetBotsMessages(_client, Context));
             }
             catch
             {
-                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично" }));
+                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично", Flags = MessageFlags.Ephemeral }));
                 return;
             }
 
-            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены" }));
+            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены", Flags = MessageFlags.Ephemeral }));
         }
 
         [SubSlashCommand("удалить_сообщения_юзера", "Удаляет все сообщения выбранного пользователя")]
         public async Task DeleteAllBotsMessages(
             [SlashCommandParameter(Name = "пользователь", Description = "пользователь, чьи сообщения будут удалены")] GuildUser user)
         {
+            if (!await this.IsAuthorized()) { return; }
+
             try
             {
                 await _client.DeleteMessagesAsync(Context.Channel.Id, GetUserMessages(_client, Context, user.Id));
             }
             catch
             {
-                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично" }));
+                await RespondAsync(InteractionCallback.Message(new() { Content = "Ошибка, сообщения не удалены или удалены частично", Flags = MessageFlags.Ephemeral }));
                 return;
             }
 
-            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены" }));
+            await RespondAsync(InteractionCallback.Message(new() { Content = "Текстовые сообщения успешно удалены", Flags = MessageFlags.Ephemeral }));
         }
 
         private static async IAsyncEnumerable<ulong> GetBotsTextMessages(RestClient client, ApplicationCommandContext context)

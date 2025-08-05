@@ -1,4 +1,5 @@
 ﻿using DiscordBot.Models;
+using DiscordBot.Utilities;
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
@@ -26,42 +27,7 @@ namespace DiscordBot.CommandModules
         public async Task CreateChannelList(
             [SlashCommandParameter(Name = "канал", Description = "канал в котором находятся участники рейда")] VoiceGuildChannel channel)
         {
-            var partialUser = Context.User as GuildUser;
-
-            if (partialUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return;
-            }
-
-            var roles = partialUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var role in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(role))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return;
-            }
+            if (!await this.IsAuthorized()) { return; }
 
             var voiceUsers = Context?.Guild?.VoiceStates;
 

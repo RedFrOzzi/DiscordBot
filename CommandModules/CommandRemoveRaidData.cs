@@ -14,14 +14,14 @@ namespace DiscordBot.CommandModules
         public async Task RemoveUserNameFromRaid(
             [SlashCommandParameter(Name = "имя")] string userName)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             if (string.IsNullOrEmpty(userName))
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Пльзователь не указан"
+                    Content = "Пльзователь не указан",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -33,7 +33,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Файл рейда не создан, сперва используй /создать"
+                    Content = "Файл рейда не создан, сперва используй /создать",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -56,7 +57,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Участник не найден"
+                    Content = "Участник не найден",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -68,7 +70,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Участник не обновлен, файл не записан"
+                    Content = "Участник не обновлен, файл не записан",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -78,7 +81,8 @@ namespace DiscordBot.CommandModules
 
             InteractionMessageProperties successProps = new()
             {
-                Content = $"Участник <{userName}> удален."
+                Content = $"Участник <{userName}> удален.",
+                Flags = MessageFlags.Ephemeral
             };
             var successMsg = InteractionCallback.Message(successProps);
 
@@ -90,14 +94,14 @@ namespace DiscordBot.CommandModules
         public async Task RemoveUserFrom(
             [SlashCommandParameter(Name = "участник")] GuildUser user)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             if (string.IsNullOrEmpty(user.Username))
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Пльзователь не указан или его имя не существует"
+                    Content = "Пльзователь не указан или его имя не существует",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -109,7 +113,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Файл рейда не создан, сперва используй /создать"
+                    Content = "Файл рейда не создан, сперва используй /создать",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -132,7 +137,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Участник не найден"
+                    Content = "Участник не найден",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -144,7 +150,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Участник не обновлен, файл не записан"
+                    Content = "Участник не обновлен, файл не записан",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -154,56 +161,13 @@ namespace DiscordBot.CommandModules
 
             InteractionMessageProperties successProps = new()
             {
-                Content = $"Участник <{user}> удален."
+                Content = $"Участник <{user}> удален.",
+                Flags = MessageFlags.Ephemeral
             };
             var successMsg = InteractionCallback.Message(successProps);
 
             await RespondAsync(successMsg);
             return;
-        }
-
-
-
-        private async Task<bool> IsAuthorized()
-        {
-            var guildUser = Context.User as GuildUser;
-
-            if (guildUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            var roles = guildUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var role in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(role))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            return true;
         }
     }
 }

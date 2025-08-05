@@ -14,14 +14,14 @@ namespace DiscordBot.CommandModules
             [SlashCommandParameter(Name = "участник")] GuildUser guildUser,
             [SlashCommandParameter(Name = "количество", Description = "количество добавится к текущему количеству")] int raidsCount)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             if (guildUser == null || string.IsNullOrEmpty(guildUser.Username) || raidsCount == 0)
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Пльзователь не указан или количество рейдов равно 0"
+                    Content = "Пльзователь не указан или количество рейдов равно 0",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -33,7 +33,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Файл рейда не создан, сперва используй /создать"
+                    Content = "Файл рейда не создан, сперва используй /создать",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -70,8 +71,7 @@ namespace DiscordBot.CommandModules
         public async Task AddRaid(
             [SlashCommandParameter(Name = "канал", Description = "канал в котором находятся участники рейда")] VoiceGuildChannel channel)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             var voiceUsers = Context?.Guild?.VoiceStates;
 
@@ -80,7 +80,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Голосовые каналы не имеют активных пользователей"
+                    Content = "Голосовые каналы не имеют активных пользователей",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -93,7 +94,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties imsgp = new()
                 {
-                    Content = "Файл рейда не создан, сперва используй /создать"
+                    Content = "Файл рейда не создан, сперва используй /создать",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(imsgp);
 
@@ -136,7 +138,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties zeroUsersMsgProps = new()
                 {
-                    Content = "Указанный голосовой канал не имеет активных пользователей"
+                    Content = "Указанный голосовой канал не имеет активных пользователей",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var zeroUsersMsg = InteractionCallback.Message(zeroUsersMsgProps);
 
@@ -189,7 +192,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Ошибка записи файла"
+                    Content = "Ошибка записи файла",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -213,7 +217,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Участник не обновлен, файл не записан"
+                    Content = "Участник не обновлен, файл не записан",
+                    Flags = MessageFlags.Ephemeral
                 };
                 var errorMsg = InteractionCallback.Message(errorMsgProps);
 
@@ -223,54 +228,13 @@ namespace DiscordBot.CommandModules
 
             InteractionMessageProperties successProps = new()
             {
-                Content = $"Участник <{name}> добавлен. Его итоговое участие: {raidsCount} раз(а)."
+                Content = $"Участник <{name}> добавлен. Его итоговое участие: {raidsCount} раз(а).",
+                Flags = MessageFlags.Ephemeral
             };
             var successMsg = InteractionCallback.Message(successProps);
 
             await RespondAsync(successMsg);
             return;
-        }
-
-        private async Task<bool> IsAuthorized()
-        {
-            var guildUser = Context.User as GuildUser;
-
-            if (guildUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            var roles = guildUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var role in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(role))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            return true;
         }
 
         private static bool IsAlreadyInFile(List<SerializedDiscordUser> userList,

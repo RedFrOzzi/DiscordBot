@@ -3,7 +3,6 @@ using DiscordBot.Models.Resources;
 using NetCord;
 using NetCord.Rest;
 using NetCord.Services.ComponentInteractions;
-using System.Text;
 
 namespace DiscordBot.ComponentInteractionModules
 {
@@ -26,7 +25,8 @@ namespace DiscordBot.ComponentInteractionModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Внутренняя ошибка"
+                    Content = "Внутренняя ошибка",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -143,7 +143,8 @@ namespace DiscordBot.ComponentInteractionModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Внутренняя ошибка"
+                    Content = "Внутренняя ошибка",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -153,7 +154,8 @@ namespace DiscordBot.ComponentInteractionModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = $"Пользователь с ником {Context.User.Username}({((GuildUser)Context.User).Nickname}) не имеет ресурсов."
+                    Content = $"Пользователь с ником {Context.User.Username}({((GuildUser)Context.User).Nickname}) не имеет ресурсов.",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -170,7 +172,8 @@ namespace DiscordBot.ComponentInteractionModules
                     name ??= string.Empty;
                     InteractionMessageProperties errorMsgProps2 = new()
                     {
-                        Content = $"{name} ввел не правильное значение ставки."
+                        Content = $"{name} ввел не правильное значение ставки.",
+                        Flags = MessageFlags.Ephemeral
                     };
                     await RespondAsync(InteractionCallback.Message(errorMsgProps2));
                     return;
@@ -180,7 +183,8 @@ namespace DiscordBot.ComponentInteractionModules
                 {
                     InteractionMessageProperties errorMsgProps = new()
                     {
-                        Content = $"Пользователь с ником {guildUser!.Name}({guildUser.NickName}) пытается поставить 0 ресурсов 🤨"
+                        Content = $"Пользователь с ником {guildUser!.Name}({guildUser.NickName}) пытается поставить 0 ресурсов 🤨",
+                        Flags = MessageFlags.Ephemeral
                     };
                     await RespondAsync(InteractionCallback.Message(errorMsgProps));
                     return;
@@ -190,7 +194,8 @@ namespace DiscordBot.ComponentInteractionModules
                 {
                     InteractionMessageProperties errorMsgProps = new()
                     {
-                        Content = $"Пользователь с ником {guildUser!.Name}({guildUser.NickName}) пытается поставить больше чем ему полагается 🤨"
+                        Content = $"Пользователь с ником {guildUser!.Name}({guildUser.NickName}) пытается поставить больше чем ему полагается 🤨",
+                        Flags = MessageFlags.Ephemeral
                     };
                     await RespondAsync(InteractionCallback.Message(errorMsgProps));
                     return;
@@ -199,7 +204,8 @@ namespace DiscordBot.ComponentInteractionModules
                 _container.AddUserBet(guildUser!, resAmount, answerNum);
 
                 await _client.ModifyMessageAsync(Context.Channel.Id, (ulong)poll.AnswerButtonsMessageId, RebuildMessage);
-                await RespondAsync(InteractionCallback.ModifyMessage(opt => { }));
+                await RespondAsync(InteractionCallback.DeferredModifyMessage);
+                //await RespondAsync(InteractionCallback.ModifyMessage(opt => { }));
 
                 void RebuildMessage(MessageOptions options)
                 {

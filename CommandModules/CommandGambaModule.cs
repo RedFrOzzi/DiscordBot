@@ -24,14 +24,14 @@ namespace DiscordBot.CommandModules
         public async Task CreatePollModal(
             [SlashCommandParameter(Name = "ресурс", Description = "Ресурс ставки")] ResourcesEnum type)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             if (!RaidFilesLoader.TryLoadRaidData(out var data))
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Ошибка загрузки данных рейда."
+                    Content = "Ошибка загрузки данных рейда.",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -82,14 +82,25 @@ namespace DiscordBot.CommandModules
         public async Task CloseGamba(
             [SlashCommandParameter(Name = "ответ", Description = "Номер ответа")] AnswerNumber correctAnswerNum)
         {
-            bool isAuthorized = await IsAuthorized();
-            if (!isAuthorized) { return; }
+            if (!await this.IsAuthorized()) { return; }
 
             if (!RaidFilesLoader.TryLoadRaidData(out var data) || _container.LastCreatedPoll == null)
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Ошибка загрузки данных рейда."
+                    Content = "Ошибка загрузки данных рейда.",
+                    Flags = MessageFlags.Ephemeral
+                };
+                await RespondAsync(InteractionCallback.Message(errorMsgProps));
+                return;
+            }
+
+            if (_container.CurrentUserBets.Count <= 1)
+            {
+                InteractionMessageProperties errorMsgProps = new()
+                {
+                    Content = "Игра завершена. Не достаточно игроков для перераспределения ресурсов.",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -111,7 +122,8 @@ namespace DiscordBot.CommandModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Ошибка записи данных рейда."
+                    Content = "Ошибка записи данных рейда.",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -127,56 +139,15 @@ namespace DiscordBot.CommandModules
 
             InteractionMessageProperties seccessMsgProps = new()
             {
-                Content = "Ставки приняты и распределены."
+                Content = "Ставки приняты и распределены.",
+                Flags = MessageFlags.Ephemeral
             };
             await RespondAsync(InteractionCallback.Message(seccessMsgProps));
             return;
         }
 
 
-        private async Task<bool> IsAuthorized()
-        {
-            var guildUser = Context.User as GuildUser;
-
-            if (guildUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            var roles = guildUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var role in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(role))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return false;
-            }
-
-            return true;
-        }
-
-
+        
         private static void GetBetsStats(List<UserBet> bets, int correctAnswer, out int totalLosersBets, out int totalWinnersBets)
         {
             totalLosersBets = 0;

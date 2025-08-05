@@ -11,42 +11,7 @@ namespace DiscordBot.CommandModules
         [SlashCommand("доступ", "Настройка прав доступа к командам")]
         public async Task CreateSettings(Role role)
         {
-            var guildUser = Context.User as GuildUser;
-
-            if (guildUser == null || Context.Guild == null)
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Ошибка пользователя"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return;
-            }
-
-            var roles = guildUser.GetRoles(Context.Guild);
-            bool isAllowed = false;
-            foreach (var r in roles)
-            {
-                if (BotApplicationSettings.Instance.HasRole(r))
-                {
-                    isAllowed = true;
-                    break;
-                }
-            }
-
-            if (!isAllowed && !BotApplicationSettings.Instance.IsAdmin(Context.User.Id))
-            {
-                InteractionMessageProperties imsgp = new()
-                {
-                    Content = "Роль пользователя не авторизована"
-                };
-                var errorMsg = InteractionCallback.Message(imsgp);
-
-                await RespondAsync(errorMsg);
-                return;
-            }
+            if (!await this.IsAuthorized()) { return; }
 
             if (BotApplicationSettings.Instance.HasRole(role))
             {

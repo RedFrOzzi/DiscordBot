@@ -45,7 +45,8 @@ namespace DiscordBot.ComponentInteractionModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = "Вопрос был утерян, без возможности восстановления. Придется создавать новый :("
+                    Content = "Вопрос был утерян, без возможности восстановления. Придется создавать новый :(",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
@@ -55,7 +56,8 @@ namespace DiscordBot.ComponentInteractionModules
             {
                 InteractionMessageProperties errorMsgProps = new()
                 {
-                    Content = $"{Context.User.Username} уже делал ставку!"
+                    Content = "Уже делал ставку!",
+                    Flags = MessageFlags.Ephemeral
                 };
                 await RespondAsync(InteractionCallback.Message(errorMsgProps));
                 return;
